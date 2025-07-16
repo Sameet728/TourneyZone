@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submit Tournament Results</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Google Fonts for Gaming Vibe -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?&family=Oxanium:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <style>
+    :root {
+      --primary-glow: #9f5dff;
+      --dark-bg: #111119;
+      --card-bg: #1c1c27;
+      --border-color: rgba(255, 255, 255, 0.1);
+
+      --gold: #ffd700;
+      --silver: #c0c0c0;
+      --bronze: #cd7f32;
+    }
+
+    body {
+      font-family: 'Oxanium', sans-serif;
+      background-color: var(--dark-bg);
+      color: #f0f0f0;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .page-header h2 {
+      font-weight: 700;
+      font-size: 2.5rem;
+    }
+
+    .page-header p {
+      color: var(--primary-glow);
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .podium-place-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-top-width: 4px;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+    }
+    .podium-place-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .podium-card-first { border-top-color: var(--gold); }
+    .podium-card-second { border-top-color: var(--silver); }
+    .podium-card-third { border-top-color: var(--bronze); }
+
+    .place-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .place-header .trophy-icon { font-size: 2rem; }
+    .place-header .place-text { font-size: 1.5rem; font-weight: 700; margin-left: 1rem;}
+
+    .place-header .text-gold { color: var(--gold); }
+    .place-header .text-silver { color: var(--silver); }
+    .place-header .text-bronze { color: var(--bronze); }
+
+    .form-control, .form-select, .form-control:focus, .form-select:focus {
+      background-color: #2a2a3a;
+      border: 1px solid var(--border-color);
+      color: #fff;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary-glow);
+      box-shadow: 0 0 0 0.25rem rgba(159, 93, 255, 0.25);
+    }
+
+    /* ✅ FIX: This rule makes dropdown options visible in dark mode */
+    .form-select option {
+      background: var(--dark-bg);
+      color: #f0f0f0;
+    }
+
+    .form-label {
+      font-weight: 600;
+      color: #aab;
+    }
+
+    .btn-glow-primary {
+      color: #fff;
+      background-color: var(--primary-glow);
+      padding: 12px 30px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+    .btn-glow-primary:hover {
+      background-color: #b37eff;
+      box-shadow: 0 0 15px #b37eff;
+    }
+  </style>
+</head>
+
+<body>
+  <%- include("../includes/navbar") %>
+
+    <div class="container my-5">
+      <div class="page-header">
+        <h2>Submit Results</h2>
+        <p>Finalize: <%= tournament.name %></p>
+      </div>
+
+      <form action="/organizer/tournaments/<%= tournament._id %>/results" method="POST">
+        <div class="row g-4 mb-4">
+          <% ["first", "second", "third"].forEach((place, idx) => { %>
+            <div class="col-lg-4">
+                <div class="podium-place-card h-100 podium-card-<%= place %>">
+                    <div class="place-header">
+                        <i class="fas fa-trophy trophy-icon text-<%= place === 'first' ? 'gold' : (place === 'second' ? 'silver' : 'bronze') %>"></i>
+                        <span class="place-text text-<%= place === 'first' ? 'gold' : (place === 'second' ? 'silver' : 'bronze') %>"><%= place.charAt(0).toUpperCase() + place.slice(1) %> Place</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Select Team</label>
+                        <select class="form-select" name="<%= place %>Place" required>
+                            <option value="" disabled selected>-- Select winning team --</option>
+                            <% tournament.teams.forEach(team => { %>
+                            <option value="<%= team.teamName %>"><%= team.name %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Final Score</label>
+                        <input type="number" name="<%= place %>Score" class="form-control" placeholder="Enter score" required>
+                    </div>
+                </div>
+            </div>
+          <% }) %>
+        </div>
+        
+        <div class="card" style="background-color: var(--card-bg);">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Notes (Optional)</label>
+                    <textarea name="notes" class="form-control" rows="3" placeholder="Add any final notes, comments, or summaries about the matches."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <button type="submit" class="btn btn-glow-primary btn-lg">
+                <i class="fas fa-award me-2"></i>Finalize & Submit Results
+            </button>
+        </div>
+      </form>
+    </div>
+    <%- include("../includes/footer") %>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
